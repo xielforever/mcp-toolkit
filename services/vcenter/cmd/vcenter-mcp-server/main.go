@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/xielforever/mcp-toolkit/modules/mcpkit/auth"
 	"github.com/xielforever/mcp-toolkit/modules/mcpkit/httpkit"
 	"github.com/xielforever/mcp-toolkit/modules/mcpkit/mcphttp"
 	"github.com/xielforever/mcp-toolkit/services/vcenter/internal/config"
 	"github.com/xielforever/mcp-toolkit/services/vcenter/internal/tools"
+	"github.com/xielforever/mcp-toolkit/services/vcenter/internal/vcenter"
 )
 
 func main() {
@@ -17,7 +20,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	reg := tools.BuildRegistryWithOptions(tools.Options{EnableDangerousOps: cfg.EnableDangerousOps})
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	api, err := vcenter.NewGovmomiClient(ctx, cfg.VCenterURL, cfg.VCenterUsername, cfg.VCenterPassword, cfg.VCenterInsecure, cfg.VCenterCAFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reg := tools.BuildRegistryWithOptions(tools.Options{EnableDangerousOps: cfg.EnableDangerousOps, API: api})
 	mcpHandler := mcphttp.NewHandler(mcphttp.Config{Registry: reg})
 
 	mux := http.NewServeMux()
@@ -29,4 +40,3 @@ func main() {
 	server := &http.Server{Addr: cfg.ListenAddr, Handler: h}
 	log.Fatal(server.ListenAndServe())
 }
-
