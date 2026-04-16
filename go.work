@@ -2,6 +2,8 @@ go 1.22
 
 use (
 	./modules/mcpkit
-	./services/vcenter
 	./services/ces
+	./services/vcenter
 )
+
+replace github.com/xielforever/mcp-toolkit/modules/mcpkit v0.0.0 => ./modules/mcpkit
