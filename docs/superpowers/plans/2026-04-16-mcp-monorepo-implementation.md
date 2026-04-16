@@ -19,6 +19,17 @@
 - `docs/superpowers/specs/2026-04-16-05-mcpmux-compose-integration-design.md`
 - `docs/superpowers/specs/2026-04-16-06-ces-service-skeleton-design.md`
 
+## Spec -> Implement Tasks 映射（一对多）
+
+| Spec | 覆盖的 Implement Tasks |
+|---|---|
+| 01 Monorepo Workspace | Task 1 |
+| 02 MCPKit HTTP/SSE | Task 2、Task 4、Task 5 |
+| 03 AuthN/AuthZ | Task 3、Task 5（受保护端点）、Task 6（token 配置/挂载）、Task 11（token 透传示例） |
+| 04 vCenter Service | Task 6、Task 7、Task 8、Task 9 |
+| 05 mcpmux Compose Integration | Task 11 |
+| 06 CES Service Skeleton | Task 10 |
+
 ## 目标目录结构（实现后应满足）
 
 ```
@@ -46,6 +57,8 @@
 ```
 
 ---
+
+## Spec 01: Monorepo Workspace（2026-04-16-01）
 
 ### Task 1: 初始化 Monorepo 工作区（go.work + 多 module）
 
@@ -101,6 +114,8 @@ Run: `go env GOWORK && go list ./...`
 Expected: `GOWORK=/workspace/go.work` 且 `go list` 不报错（可能暂时无包或只有空包）
 
 ---
+
+## Spec 02: MCPKit HTTP/SSE（2026-04-16-02）
 
 ### Task 2: 在 mcpkit 中实现 HTTP 基础（server、base path、health、优雅退出）
 
@@ -221,6 +236,8 @@ Run: `go test ./modules/mcpkit/httpkit -run TestServer_BasePathAndHealth -v`
 Expected: PASS
 
 ---
+
+## Spec 03: AuthN/AuthZ（2026-04-16-03）
 
 ### Task 3: 在 mcpkit 中实现 Bearer 鉴权中间件（AuthN）
 
@@ -747,6 +764,8 @@ Expected: PASS
 
 ---
 
+## Spec 04: vCenter Service（2026-04-16-04）
+
 ### Task 6: vCenter 服务脚手架（main、env 配置、挂载 mcpkit）
 
 **Files:**
@@ -1138,6 +1157,8 @@ Expected: PASS
 
 ---
 
+## Spec 06: CES Service Skeleton（2026-04-16-06）
+
 ### Task 10: CES 模块占位服务（可运行但不提供实际工具）
 
 **Files:**
@@ -1153,6 +1174,8 @@ Run: `go build ./services/ces/cmd/ces-mcp-server`
 Expected: build success
 
 ---
+
+## Spec 05: mcpmux Compose Integration（2026-04-16-05）
 
 ### Task 11: 生成 mcpmux docker-compose 接入示例（deploy/mcpmux）
 
@@ -1213,12 +1236,12 @@ README 必须包含：
 
 ## 计划自检（对照 Specs 覆盖）
 
-- Workspace/多模块：Task 1
-- mcpkit HTTP/SSE：Task 2 + Task 4 + Task 5
-- Bearer 鉴权：Task 3 + Task 5 + vcenter main
-- vCenter MVP：Task 6-9
-- CES 占位：Task 10
-- mcpmux compose：Task 11
+- Spec 01：Task 1
+- Spec 02：Task 2、Task 4、Task 5
+- Spec 03：Task 3、Task 5、Task 6、Task 11
+- Spec 04：Task 6、Task 7、Task 8、Task 9
+- Spec 05：Task 11
+- Spec 06：Task 10
 
 ---
 
