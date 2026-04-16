@@ -3,26 +3,27 @@
 ## 包图（go.work + 多 go.mod）
 
 ```mermaid
-classDiagram
-  class "go.work" as gowork <<workspace>>
+graph TD
+  gowork["go.work\n(workspace)"]
 
-  class "modules/mcpkit" as mcpkit <<module>>
-  class "services/vcenter" as vcenter <<module>>
-  class "services/ces" as ces <<module>>
-  class "deploy/mcpmux" as deploymux <<package>>
-  class "docs/superpowers/specs" as specs <<package>>
+  mcpkit["modules/mcpkit\n(module)"]
+  vcenter["services/vcenter\n(module)"]
+  ces["services/ces\n(module，占位)"]
 
-  gowork ..> mcpkit : use
-  gowork ..> vcenter : use
-  gowork ..> ces : use
+  deploymux["deploy/mcpmux\n(package)"]
+  specs["docs/superpowers/specs\n(package)"]
 
-  vcenter --> mcpkit : require
-  ces --> mcpkit : require
+  gowork -.->|"use"| mcpkit
+  gowork -.->|"use"| vcenter
+  gowork -.->|"use"| ces
 
-  deploymux ..> vcenter : routes to
-  deploymux ..> ces : routes to(未来)
+  vcenter -->|"require"| mcpkit
+  ces -->|"require"| mcpkit
 
-  specs ..> mcpkit : design
-  specs ..> vcenter : design
-  specs ..> deploymux : design
+  deploymux -.->|"routes to"| vcenter
+  deploymux -.->|"routes to（未来）"| ces
+
+  specs -.->|"design"| mcpkit
+  specs -.->|"design"| vcenter
+  specs -.->|"design"| deploymux
 ```
