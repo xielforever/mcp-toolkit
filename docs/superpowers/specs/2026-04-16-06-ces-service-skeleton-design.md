@@ -20,6 +20,28 @@ services/ces/
     └── tools/                 # MCP tools（后续填充）
 ```
 
+```mermaid
+flowchart TB
+  subgraph ces[services/ces (占位)]
+    entry[cmd/ces-mcp-server]
+    cfg[internal/config]
+    tools[internal/tools]
+    client[internal/ces]
+  end
+
+  subgraph kit[modules/mcpkit]
+    transport[MCP HTTP/SSE]
+    auth[Bearer auth]
+  end
+
+  entry --> cfg
+  entry --> transport
+  transport --> auth
+  transport --> tools
+  tools --> client
+  client -.-> api[Huawei Cloud CES API]
+```
+
 ## 配置占位（环境变量）
 
 鉴权与服务端通用配置沿用 `mcpkit`：

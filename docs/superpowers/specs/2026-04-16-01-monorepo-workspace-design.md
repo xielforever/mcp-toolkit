@@ -37,6 +37,33 @@
         └── specs/
 ```
 
+```mermaid
+flowchart TB
+  repo[Monorepo]
+  work[go.work]
+
+  subgraph modules[modules]
+    mcpkit[modules/mcpkit<br/>共享基础库]
+  end
+
+  subgraph services[services]
+    vcenter[services/vcenter<br/>vCenter MCP Server]
+    ces[services/ces<br/>CES MCP Server(占位)]
+  end
+
+  subgraph deploy[deploy]
+    mux[deploy/mcpmux<br/>docker-compose 示例]
+  end
+
+  repo --> work
+  repo --> modules
+  repo --> services
+  repo --> deploy
+  vcenter --> mcpkit
+  ces --> mcpkit
+  mux --> vcenter
+```
+
 ## Module 命名约定
 
 仓库 module path 以 `github.com/<org>/<repo>` 为根（后续替换为真实值）。
@@ -63,6 +90,14 @@ use (
 
 - 服务模块对共享库的依赖通过正常 `require` 引入；在 workspace 内由本地 `use` 解析到源代码
 - 共享库对服务模块不得反向依赖
+
+```mermaid
+flowchart LR
+  vcenter[services/vcenter] -->|require| mcpkit[modules/mcpkit]
+  ces[services/ces] -->|require| mcpkit
+  mcpkit -.->|禁止反向依赖| vcenter
+  mcpkit -.->|禁止反向依赖| ces
+```
 
 ## 依赖策略
 

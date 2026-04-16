@@ -26,6 +26,19 @@
 - `vcenter` MCP 服务作为后端容器
 - 两者在同一 docker network 内通过服务名访问
 
+```mermaid
+flowchart LR
+  subgraph net[docker network]
+    mux[mcpmux container]
+    vc[vcenter container<br/>:8080]
+  end
+
+  client[AI App] --> mux
+  mux -->|GET /sse<br/>Authorization: Bearer| vc
+  mux -->|POST /messages<br/>Authorization: Bearer| vc
+  mux -->|GET /readyz| vc
+```
+
 ## 鉴权与透传
 
 ### 目标行为
@@ -55,6 +68,17 @@
 若启用 `MCP_HTTP_BASE_PATH=/vcenter`，则 `mcpmux` 后端配置中需使用：
 
 - `http://vcenter:8080/vcenter`
+
+```mermaid
+flowchart TB
+  cfg[mcpmux backend config] --> name[name: vcenter]
+  cfg --> url[url: http://vcenter:8080]
+  cfg --> transport[transport: HTTP/SSE]
+  cfg --> headers[headers: Authorization Bearer ${MCP_SERVICE_TOKEN}]
+  cfg --> basepath{MCP_HTTP_BASE_PATH set?}
+  basepath -->|no| s1[/sse & /messages]
+  basepath -->|/vcenter| s2[/vcenter/sse & /vcenter/messages]
+```
 
 ## 示例配置结构（概念性）
 

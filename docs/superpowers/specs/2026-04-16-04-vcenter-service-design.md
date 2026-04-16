@@ -33,6 +33,30 @@ services/vcenter/
     └── tools/                 # MCP tools 定义与 handler
 ```
 
+```mermaid
+flowchart TB
+  subgraph vsvc[services/vcenter]
+    entry[cmd/vcenter-mcp-server]
+    cfg[internal/config]
+    tools[internal/tools]
+    vc[internal/vcenter]
+  end
+
+  subgraph kit[modules/mcpkit]
+    transport[MCP HTTP/SSE]
+    auth[Bearer auth]
+    dispatcher[tool dispatcher]
+  end
+
+  entry --> cfg
+  entry --> transport
+  transport --> auth
+  transport --> dispatcher
+  dispatcher --> tools
+  tools --> vc
+  vc --> api[vCenter / vSphere]
+```
+
 ## 配置（环境变量）
 
 ### vCenter 连接
@@ -67,6 +91,17 @@ services/vcenter/
 ## Tool 设计
 
 工具命名采用 `vcenter.<verb>_<object>` 风格，输入输出尽量 JSON 结构化，避免在 tool output 中返回超大原始对象。
+
+```mermaid
+flowchart LR
+  user[AI App] --> mux[mcpmux]
+  mux -->|HTTP/SSE| svc[vcenter MCP Service]
+  svc -->|tools/call| inv[vcenter.list_inventory]
+  svc -->|tools/call| perf[vcenter.query_perf]
+  svc -->|tools/call| ev[vcenter.list_events]
+  svc -->|tools/call| al[vcenter.list_alarms]
+  svc -.->|disabled by default| ops[vcenter.power / vcenter.snapshot]
+```
 
 ### 资产清单
 
@@ -171,6 +206,14 @@ services/vcenter/
 ### VM 运维操作（高危）
 
 默认禁用；当 `VCENTER_ENABLE_DANGEROUS_OPS=true` 时启用。
+
+```mermaid
+flowchart TB
+  call[tools/call: vcenter.power or vcenter.snapshot] --> flag{VCENTER_ENABLE_DANGEROUS_OPS?}
+  flag -->|false| denied[Return controlled error]
+  flag -->|true| run[Execute via govmomi]
+  run --> task[Return taskMoRef/state]
+```
 
 #### vcenter.power
 

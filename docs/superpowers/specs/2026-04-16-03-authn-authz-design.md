@@ -36,6 +36,20 @@
 
 - `MCP_AUTH_PROTECT_HEALTH=true/false`：对健康检查也鉴权
 
+```mermaid
+flowchart TB
+  req[Incoming Request] --> ep{Endpoint?}
+  ep -->|/healthz /readyz| h{Protect health?}
+  ep -->|/sse /messages| a[Auth required]
+  h -->|false| ok1[Allow]
+  h -->|true| a
+  a --> parse{Authorization: Bearer ?}
+  parse -->|missing/invalid| r401[401]
+  parse -->|ok| match{token match?}
+  match -->|no| r403[403]
+  match -->|yes| ok2[Allow]
+```
+
 ## Token 配置
 
 环境变量：
@@ -53,6 +67,21 @@
 - 解析失败返回 401
 - token 不匹配返回 403 或 401（推荐 403，避免提示“token 是否存在”）
 - 比较建议使用常量时间比较（防止时序侧信道）
+
+```mermaid
+sequenceDiagram
+  participant M as mcpmux
+  participant S as MCP Service
+
+  M->>S: GET /sse (Authorization: Bearer token)
+  alt missing/invalid header
+    S-->>M: 401
+  else token mismatch
+    S-->>M: 403
+  else ok
+    S-->>M: SSE stream established
+  end
+```
 
 ## 错误返回约定
 

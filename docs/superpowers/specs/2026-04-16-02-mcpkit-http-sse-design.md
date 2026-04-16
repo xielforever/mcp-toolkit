@@ -37,6 +37,21 @@
 
 - `MCP_HTTP_BASE_PATH`（默认空），例如 `/vcenter`，则端点变为 `/vcenter/sse`、`/vcenter/messages`
 
+```mermaid
+flowchart TB
+  client[MCP Client / mcpmux]
+  subgraph svc[MCP Service (HTTP)]
+    sse[GET /sse<br/>SSE stream]
+    msg[POST /messages<br/>client->server]
+    hz[GET /healthz]
+    rz[GET /readyz]
+  end
+  client --> sse
+  client --> msg
+  client --> hz
+  client --> rz
+```
+
 ## 会话模型
 
 ### 会话标识
@@ -45,11 +60,31 @@
 - 服务通过 SSE 事件向客户端发送“握手/初始化”消息，包含 `session_id`（具体字段按 MCP 标准）
 - 客户端后续向 `POST /messages` 发送消息时携带 `session_id`（Header 或 JSON 字段，按 MCP 标准）
 
+```mermaid
+sequenceDiagram
+  participant C as Client / mcpmux
+  participant S as MCP Service
+
+  C->>S: GET /sse (Authorization)
+  S-->>C: SSE: initialize/handshake (session_id)
+  C->>S: POST /messages (session_id, msg)
+  S-->>C: SSE: responses/notifications
+```
+
 ### 生命周期
 
 - SSE 连接断开时会话进入过期状态
 - 会话缓存保留短 TTL（例如 1-5 分钟）以允许网络抖动恢复
 - TTL 后回收会话资源
+
+```mermaid
+stateDiagram-v2
+  [*] --> Active: GET /sse
+  Active --> Disconnected: network close
+  Disconnected --> Active: reconnect within TTL
+  Disconnected --> Expired: TTL elapsed
+  Expired --> [*]
+```
 
 ### 并发与顺序
 
@@ -75,6 +110,27 @@
 - handler：`func(ctx, input) (output, error)`
 
 Tool 命名建议：`<service>.<action>`（例如 `vcenter.list_inventory`）。
+
+```mermaid
+flowchart LR
+  subgraph service[Service Module]
+    tools[tools registry]
+    handlers[tool handlers]
+  end
+  subgraph kit[modules/mcpkit]
+    router[HTTP router]
+    session[session manager]
+    dispatcher[message/tool dispatcher]
+    errors[error mapper]
+  end
+
+  router --> session
+  session --> dispatcher
+  dispatcher --> tools
+  tools --> handlers
+  handlers --> dispatcher
+  dispatcher --> errors
+```
 
 ### 输出与错误映射
 
