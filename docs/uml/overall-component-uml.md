@@ -1,6 +1,4 @@
-# 2026-04-16-00 Overall Component UML
-
-## 组件图
+# Overall Component UML
 
 ```mermaid
 graph LR

@@ -1,6 +1,4 @@
-# 2026-04-16-00 Overall Deployment UML
-
-## 部署图（docker-compose 视角）
+# Overall Deployment UML
 
 ```mermaid
 graph TB

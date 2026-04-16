@@ -1,6 +1,4 @@
-# 2026-04-16-00 Overall Package UML
-
-## 包图（go.work + 多 go.mod）
+# Overall Package UML
 
 ```mermaid
 graph TD
